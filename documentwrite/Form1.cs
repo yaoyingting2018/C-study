@@ -21,8 +21,8 @@ namespace documentwrite
         EditForm ftmp;//定义弹出的窗体类，主要是弹出文本框控件
         //定义xml文件路径在应用程序下面的相对路径
         string path = Application.StartupPath + "\\test.xml";
-        string m_sDesignTreeFile = Environment.CurrentDirectory + "\\DesignTreeTest.xml";
-        DataTable m_DesTreeDataTable;//存储设计树的信息
+        string m_sDesignXmlFile = Environment.CurrentDirectory + "\\DesignTreeTest.xml";
+        DataTable m_DesignDataTable;//存储设计树的信息
        
         //填充datagrid用
         DataTable newdt;
@@ -31,12 +31,15 @@ namespace documentwrite
         {
             InitializeComponent();
             tmpTree = zongTreeView;
-            m_DesTreeDataTable = new DataTable("designtable");
+            m_DesignDataTable = new DataTable("designtable");
+
+            //表格初始化，添加列
+            InitDesignDataSet(ref m_DesignDataTable);
+
            
-            //表格初始化
-            //InitDTreeDataSet(ref m_DesTreeDataTable);
-           
-           
+
+
+
 
 
 
@@ -90,7 +93,7 @@ namespace documentwrite
             // 动态添加控件（控件放在窗体中）
             ftmp = new EditForm();
             TreeNode tmpNode = new TreeNode();
-            DataRow dr = m_DesTreeDataTable.NewRow();
+            DataRow dr = m_DesignDataTable.NewRow();
             // ftmp.Flag = true;
             if (ftmp.ShowDialog() == DialogResult.OK)
             {
@@ -102,7 +105,7 @@ namespace documentwrite
                     dr["PId"] = Convert.ToUInt32(tmpTree.SelectedNode.Tag);
                     dr["Name"] = ftmp.NodeName;
                     dr["RichTextString"] = "";
-                    m_DesTreeDataTable.Rows.Add(dr);
+                    m_DesignDataTable.Rows.Add(dr);
                     tmpNode.Tag = dr["Id"];
                     tmpTree.SelectedNode.Nodes.Add(tmpNode);
 
@@ -174,7 +177,7 @@ namespace documentwrite
         }
 
         //为数据表添加列，并定义主键
-        private void InitDTreeDataSet(ref DataTable table)
+        private void InitDesignDataSet(ref DataTable table)
         {
             foreach(XmlSchema p in XmlSchema.m_aXmlParas)
             {
@@ -183,68 +186,25 @@ namespace documentwrite
             //定义主键（并自增）m_DesTreeDataTable.Columns["Id"].AutoIncrement = true;
 
             table.PrimaryKey = new DataColumn[] { table.Columns["Id"] };
-            m_DesTreeDataTable.Columns["Id"].AutoIncrement = true;
+            table.Columns["Id"].AutoIncrement = true;
             newdt = new DataTable();
             newdt = table.Clone();
             dataGridView1.DataSource = newdt;
             //隐藏最后一列
-            dataGridView1.Columns[3].Visible = false;
-            //加入一个根节点
-            DataRow root = table.NewRow();
-            root["PId"] = 0;
-            root["Id"] = 1;
-            root["Name"] = "设计需求树";
-            root["RichTextString"] = "";
-            table.Rows.Add(root);
+            dataGridView1.Columns[3].Visible = false;          
 
         }
 
-        //设计表绑定树控件。树控件信息包括节点tag存ID号，节点的文本信息显示在树上
-        private void InitDTreeView(ref TreeView treeView, DataTable dataTable)
-        {
-            // 连接DataTable的视图
-            DataView dv = new DataView(dataTable);
-            AddTree(ref treeView, dv, 0, (TreeNode)null);
-            treeView.ExpandAll();
-        }
-          
-        private void AddTree(ref TreeView treeView, DataView dv, int PID, TreeNode pNode)
-        {
-            //树控件上的节点
-            TreeNode tn = new TreeNode();
-            dv.RowFilter = "[PId]=" + PID;
-            foreach (DataRowView row in dv)
-            {
-                //添加根节点
-                if (pNode == null)
-                {
-                    tn.Tag = row["Id"].ToString();
-                    tn.Text = row["Name"].ToString();
-                    treeView.Nodes.Add(tn);
-                    //tn.ExpandAll();
-                    AddTree(ref treeView, dv, Int32.Parse(row["Id"].ToString()), tn);
-                }
-                else
-                {
-                    TreeNode tn2 = new TreeNode();
-                    tn2.Tag = row["Id"].ToString();
-                    tn2.Text = row["Name"].ToString();
-                    pNode.Nodes.Add(tn2);
-                    tn.ExpandAll();
-                    AddTree(ref treeView, dv, Int32.Parse(row["Id"].ToString()), tn2);
-                }
-            }
-        }
-
-
-        private void BinTreeView()
+        //设计表绑定树控件
+        private void BinTreeView(ref TreeView treeView, DataTable dataTable)
         {
             //得到测试用的 DataTable  
-            InitTestDataSet(ref m_DesTreeDataTable);
+            //InitTestDataSet(ref m_DesTreeDataTable);
+
             //定义临时树节点  
             TreeNode tmpNd;
-            //从DataTable中得到所有父节点为0的DataRow形成的数组  
-            DataRow[] rows = m_DesTreeDataTable.Select("PId='0'");
+            //从DataTable中得到所有父节点为0的DataRow形成的根节点数组  
+            DataRow[] rows = dataTable.Select("PId='0'");
             //遍历根节点数组  
             foreach (DataRow row in rows)
             {
@@ -252,12 +212,13 @@ namespace documentwrite
                 //给根节点赋值 
                 tmpNd.Name= row["id"].ToString();
                 tmpNd.Text = row["name"].ToString();
-                
+
                 //将节点加入到树中  
-                designTreeView.Nodes.Add(tmpNd);
+                treeView.Nodes.Add(tmpNd);
                 //递归加入此根节点的子节点  
-                InitTreeView(tmpNd.Nodes, tmpNd.Name, m_DesTreeDataTable);
+                InitTreeView(tmpNd.Nodes, tmpNd.Name, dataTable);
             }
+            treeView.ExpandAll();
         }
 
         private void InitTreeView(TreeNodeCollection treeNodeCollection, string p, DataTable dt)
@@ -277,75 +238,20 @@ namespace documentwrite
                 InitTreeView(tmpNd.Nodes, tmpNd.Name, dt);
             }
         }
-
-
-
-
-        private void InitTestDataSet(ref DataTable table)
-        {
-            foreach (XmlSchema p in XmlSchema.m_aXmlParas)
-            {
-                table.Columns.Add(p.m_sName, p.m_Type);
-            }
-            table.PrimaryKey = new DataColumn[] { table.Columns["Id"] };
-            m_DesTreeDataTable.Columns["Id"].AutoIncrement = true;
-            newdt = new DataTable();
-            newdt = table.Clone();
-            dataGridView1.DataSource = newdt;
-            //隐藏最后一列
-            dataGridView1.Columns[3].Visible = false;
-
-            DataRow root = table.NewRow();
-            root["PId"] = 0;
-            root["Id"] = 1;
-            root["Name"] = "设计需求树";
-            root["RichTextString"] = "";
-            table.Rows.Add(root);
-            root = table.NewRow();
-            root["PId"] = 0;
-            root["Id"] = 2;
-            root["Name"] = "设计需";
-            root["RichTextString"] = "";
-            table.Rows.Add(root);
-            root = table.NewRow();
-            root["PId"] = 1;
-            root["Id"] = 3;
-            root["Name"] = "设计需求";
-            root["RichTextString"] = "";
-            table.Rows.Add(root);
-            root = table.NewRow();
-            root["PId"] = 0;
-            root["Id"] = 4;
-            root["Name"] = "设计需";
-            root["RichTextString"] = "";
-            table.Rows.Add(root);
-            root = table.NewRow();
-            root["PId"] = 4;
-            root["Id"] = 5;
-            root["Name"] = "设计需";
-            root["RichTextString"] = "";
-            table.Rows.Add(root);
-            root = table.NewRow();
-            root["PId"] = 3;
-            root["Id"] = 6;
-            root["Name"] = "设计需222";
-            root["RichTextString"] = "";
-            table.Rows.Add(root);
-
-
-        }
+  
+     
         //读xml文件，信息读入绑定树控件的表中
-        public void LoadDeTree(string sxmlFile)
+        public void LoadDesignXML(string sxmlFile)
         {
             if(DesignTree.LoadXMLFile(sxmlFile))
             {
                 //清空节点
                 designTreeView.Nodes.Clear();
                 //清除表格所有的数据
-                m_DesTreeDataTable.Clear();
+                m_DesignDataTable.Clear();
                 foreach(DesignTree node in DesignTree.m_AllDesignNode)
                 {
-                    AddDeNodeToDataSet(node, ref m_DesTreeDataTable);
+                    AddDeNodeToDataSet(node, ref m_DesignDataTable);
                 }
             }
         }
@@ -371,13 +277,13 @@ namespace documentwrite
         {
             
             //存入表格信息 树节点信息变类的所有节点信息，节点信息存入表格，(最后表格写入xml)
-            DataRow dr = m_DesTreeDataTable.NewRow();
+            DataRow dr = m_DesignDataTable.NewRow();
             // DesignTree node = new DesignTree();
             //dr.Delete();
             //m_DesTreeDataTable.Rows.
             //判断ID是否存在
             int tmpid= Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
-            DataRow[] rows = m_DesTreeDataTable.Select("Id='" + tmpid + "'");
+            DataRow[] rows = m_DesignDataTable.Select("Id='" + tmpid + "'");
             //判断ID是否存在,存在编辑原表格数据
             if (rows.Length>0)
             {
@@ -396,7 +302,7 @@ namespace documentwrite
                 dr["Id"] = Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
                 dr["RichTextString"] = richTextBox1.Rtf;
                 //dr.EndEdit();
-                m_DesTreeDataTable.Rows.Add(dr);
+                m_DesignDataTable.Rows.Add(dr);
             }
             //dr.BeginEdit();
            
@@ -407,7 +313,7 @@ namespace documentwrite
         //保存整个树节点的信息，写入xml文件中
         private void saveButtonItem_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-            m_DesTreeDataTable.WriteXml(m_sDesignTreeFile, XmlWriteMode.IgnoreSchema);
+            m_DesignDataTable.WriteXml(m_sDesignXmlFile, XmlWriteMode.IgnoreSchema);
         }
 
         //打开word文档导入到树控件
@@ -427,7 +333,7 @@ namespace documentwrite
 
                 int id = Convert.ToInt32(designTreeView.SelectedNode.Tag);
 
-                DataRow[] rows = m_DesTreeDataTable.Select("Id='" + id + "'");
+                DataRow[] rows = m_DesignDataTable.Select("Id='" + id + "'");
                 foreach (DataRow row in rows)
                 {
                     newdt.Rows.Add(row.ItemArray);
@@ -439,11 +345,10 @@ namespace documentwrite
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            // LoadDeTree(m_sDesignTreeFile);
-            //TreeView绑定表格
-            // InitDTreeView(ref designTreeView, m_DesTreeDataTable);
-            BinTreeView();              //绑定树控件  
-            designTreeView.ExpandAll();      //展开所有节点  
+            //xml节点信息存入表格
+            LoadDesignXML(m_sDesignXmlFile);
+            BinTreeView(ref designTreeView, m_DesignDataTable);              //表格绑定树控件  
+           
         }
 
         //tree的信息怎么编排PID，ID信息，从上到下自动，ID固定不变的话，新插入的节点信息ID号跟着递增（自动编排，还是手动写）
