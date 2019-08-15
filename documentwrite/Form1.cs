@@ -32,15 +32,8 @@ namespace documentwrite
             InitializeComponent();
             tmpTree = zongTreeView;
             m_DesignDataTable = new DataTable("designtable");
-
             //表格初始化，添加列
             InitDesignDataSet(ref m_DesignDataTable);
-
-           
-
-
-
-
 
 
         }
@@ -75,19 +68,29 @@ namespace documentwrite
                 tmpTree = reportTreeView;
             }
         }
-
+        
+        //添加根节点
         private void addRoot_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             //动态添加控件（控件放在窗体中）
             ftmp = new EditForm();
+            TreeNode tmpNode = new TreeNode();
+            DataRow dr = m_DesignDataTable.NewRow();
             //  ftmp.Flag = true;
             if (ftmp.ShowDialog() == DialogResult.OK)
             {
                 //添加根节点到树节点集合中
-                tmpTree.Nodes.Add(ftmp.NodeName);
+                tmpNode.Text = ftmp.NodeName;                
+                dr["PId"] = 0;
+                dr["Name"] = ftmp.NodeName;
+                dr["RichTextString"] = "";
+                m_DesignDataTable.Rows.Add(dr);
+                tmpNode.Tag = dr["Id"];//object类型
+                tmpTree.Nodes.Add(tmpNode);
             }
         }
 
+        //添加子节点，并自动对PID,ID编号
         private void addNode_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             // 动态添加控件（控件放在窗体中）
@@ -105,16 +108,14 @@ namespace documentwrite
                     dr["PId"] = Convert.ToUInt32(tmpTree.SelectedNode.Tag);
                     dr["Name"] = ftmp.NodeName;
                     dr["RichTextString"] = "";
-                    m_DesignDataTable.Rows.Add(dr);
-                    tmpNode.Tag = dr["Id"];
+                    m_DesignDataTable.Rows.Add(dr);                    
+                    tmpNode.Tag = dr["Id"];//object类型
                     tmpTree.SelectedNode.Nodes.Add(tmpNode);
-
                 }
                 catch
                 {
                     MessageBox.Show("请选择根节点");
                 }
-                
                 //展开所有的树节点
                 tmpTree.ExpandAll();
             }
@@ -147,6 +148,9 @@ namespace documentwrite
         {
             try
             {
+                uint tmpId = Convert.ToUInt32(tmpTree.SelectedNode.Tag.ToString());
+                DataRow[] rows = m_DesignDataTable.Select("Id='" + tmpId + "'");
+                rows[0].Delete();
                 tmpTree.SelectedNode.Remove();
             }
             catch
@@ -183,14 +187,15 @@ namespace documentwrite
             {
                 table.Columns.Add(p.m_sName, p.m_Type);
             }
-            //定义主键（并自增）m_DesTreeDataTable.Columns["Id"].AutoIncrement = true;
-
+            //定义主键（并自增）
             table.PrimaryKey = new DataColumn[] { table.Columns["Id"] };
             table.Columns["Id"].AutoIncrement = true;
             newdt = new DataTable();
             newdt = table.Clone();
             dataGridView1.DataSource = newdt;
-            //隐藏最后一列
+            //PID.ID不可编辑，隐藏最后一列
+            dataGridView1.Columns[0].ReadOnly = true;
+            dataGridView1.Columns[1].ReadOnly = true;
             dataGridView1.Columns[3].Visible = false;          
 
         }
@@ -210,18 +215,18 @@ namespace documentwrite
             {
                 tmpNd = new TreeNode();
                 //给根节点赋值 
-                tmpNd.Name= row["id"].ToString();
+                tmpNd.Tag = row["id"].ToString();
                 tmpNd.Text = row["name"].ToString();
 
                 //将节点加入到树中  
                 treeView.Nodes.Add(tmpNd);
                 //递归加入此根节点的子节点  
-                InitTreeView(tmpNd.Nodes, tmpNd.Name, dataTable);
+                InitTreeView(tmpNd.Nodes, uint.Parse(tmpNd.Tag.ToString()), dataTable);
             }
             treeView.ExpandAll();
         }
 
-        private void InitTreeView(TreeNodeCollection treeNodeCollection, string p, DataTable dt)
+        private void InitTreeView(TreeNodeCollection treeNodeCollection, uint p, DataTable dt)
         {
             TreeNode tmpNd;
             //取得以此节点为父节点的数据行  
@@ -230,12 +235,12 @@ namespace documentwrite
             {
                 tmpNd = new TreeNode();
                 //给根节点赋值  
-                tmpNd.Name = row["id"].ToString();
+                tmpNd.Tag = row["id"].ToString();
                 tmpNd.Text = row["name"].ToString();
                 //将节点加入到树中  
                 treeNodeCollection.Add(tmpNd);
                 //递归加入此节点的子节点  
-                InitTreeView(tmpNd.Nodes, tmpNd.Name, dt);
+                InitTreeView(tmpNd.Nodes, uint.Parse(tmpNd.Tag.ToString()), dt);
             }
         }
   
@@ -251,15 +256,13 @@ namespace documentwrite
                 m_DesignDataTable.Clear();
                 foreach(DesignTree node in DesignTree.m_AllDesignNode)
                 {
-                    AddDeNodeToDataSet(node, ref m_DesignDataTable);
+                    AddNodeToDataSet(node, ref m_DesignDataTable);
                 }
             }
         }
 
-    
-
         //把对象信息加入表中
-        public void AddDeNodeToDataSet(DesignTree node,ref DataTable table)
+        public void AddNodeToDataSet(DesignTree node,ref DataTable table)
         {
             object[] t_Object = new object[table.Columns.Count];
 
@@ -277,53 +280,189 @@ namespace documentwrite
         {
             
             //存入表格信息 树节点信息变类的所有节点信息，节点信息存入表格，(最后表格写入xml)
-            DataRow dr = m_DesignDataTable.NewRow();
-            // DesignTree node = new DesignTree();
-            //dr.Delete();
-            //m_DesTreeDataTable.Rows.
+            //DataRow dr = m_DesignDataTable.NewRow();
             //判断ID是否存在
             int tmpid= Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
             DataRow[] rows = m_DesignDataTable.Select("Id='" + tmpid + "'");
             //判断ID是否存在,存在编辑原表格数据
-            if (rows.Length>0)
-            {
-
+            //if (rows.Length>0)
+            //{
                 rows[0].BeginEdit();
                 rows[0]["Name"]= tmpTree.SelectedNode.Text;
-                rows[0]["PId"] = Convert.ToInt32(dataGridView1[0, 0].Value.ToString());
-                rows[0]["Id"] = Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
+               // rows[0]["PId"] = Convert.ToInt32(dataGridView1[0, 0].Value.ToString());
+               // rows[0]["Id"] = Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
                 rows[0]["RichTextString"] = richTextBox1.Rtf;
                 rows[0].EndEdit();
-            }
-            else
-            {
-                dr["Name"] = tmpTree.SelectedNode.Text;
-                dr["PId"] = Convert.ToInt32(dataGridView1[0, 0].Value.ToString());
-                dr["Id"] = Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
-                dr["RichTextString"] = richTextBox1.Rtf;
-                //dr.EndEdit();
-                m_DesignDataTable.Rows.Add(dr);
-            }
-            //dr.BeginEdit();
-           
-            
+                MessageBox.Show("保存节点信息成功");
+            // }
+            //else
+            //{
+            //    dr["Name"] = tmpTree.SelectedNode.Text;
+            //    dr["PId"] = Convert.ToInt32(dataGridView1[0, 0].Value.ToString());
+            //    dr["Id"] = Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
+            //    dr["RichTextString"] = richTextBox1.Rtf;
 
+            //    m_DesignDataTable.Rows.Add(dr);
+            //}
         }
       
         //保存整个树节点的信息，写入xml文件中
         private void saveButtonItem_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-            m_DesignDataTable.WriteXml(m_sDesignXmlFile, XmlWriteMode.IgnoreSchema);
+            string fileName = "";
+            //保存之前对上一次结果做备份
+            if (SaveFile(out fileName, "DesignTreeTest.xml", "xml file|*.xml|all file|*.*"))
+            {
+                File.Copy("DesignTreeTest.xml", "DesignTreeTest.xml.bak", true);
+                m_DesignDataTable.WriteXml(m_sDesignXmlFile, XmlWriteMode.IgnoreSchema);
+            }
+        }
+
+        //保存文件操作
+        public Boolean SaveFile(out String sFile, String sDefaultName, String sFilter)
+        {
+            if (!String.IsNullOrWhiteSpace(sDefaultName))
+            {
+                if (Directory.Exists(Path.GetDirectoryName(sDefaultName)))
+                {
+                    sFile = sDefaultName;
+                    return true;
+                }
+            }
+
+            SaveFileDialog t_SaveXMLDlg = new SaveFileDialog();
+            t_SaveXMLDlg.FileName = sDefaultName;
+            t_SaveXMLDlg.Filter = sFilter;
+            t_SaveXMLDlg.ShowDialog();
+            if (!String.IsNullOrWhiteSpace(t_SaveXMLDlg.FileName))
+            {
+                sFile = t_SaveXMLDlg.FileName.Trim();
+                return (true);
+            }
+
+            sFile = null;
+            return (false);
         }
 
         //打开word文档导入到树控件
         private void openButtonItem_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-
-            
-
+            //清除树上的节点
+            designTreeView.Nodes.Clear();
+            //表格数据清除
+            m_DesignDataTable.Rows.Clear();
+            string fileName = "";
+            if (OpenFile(out fileName, "word文件|*.docx|word文件|*.doc", "Load word file"))
+            {
+                if (LoadWordFile(fileName))
+                {
+                    BinTreeView(ref designTreeView, m_DesignDataTable); //表格绑定树控件
+                }
+            }
         }
 
+        //只对四级标题处理
+        public Boolean LoadWordFile(string sWordFilePath)
+        {
+            Document doc = new Document();
+            try
+            {
+                doc.LoadFromFile(sWordFilePath);
+                //遍历文档中的section
+                uint i = 0;
+                DataRow tmpRow;
+                foreach (Section section in doc.Sections)
+                {
+                    foreach (Paragraph paragraph in section.Paragraphs)
+                    {
+                        //判断段落标题名称
+                        if (paragraph.StyleName == "1")
+                        {
+
+                            tmpRow = m_DesignDataTable.NewRow();
+                            i++;
+                            tmpRow["PId"] = Convert.ToUInt32(paragraph.StyleName)-1;
+                            tmpRow["Id"] = Convert.ToUInt32(i);
+                            tmpRow["Name"] = paragraph.Text;
+                            tmpRow["RichTextString"] = "";
+                            m_DesignDataTable.Rows.Add(tmpRow);
+                        }
+                        if (paragraph.StyleName == "2")
+                        {
+                            tmpRow = m_DesignDataTable.NewRow();
+                            i++;
+                            //找到最近的PID=1的最大Id数据行
+
+                            //DataRow[] drArr = m_zongTreeDataTable.Select("PId='1'");
+                            // tmpRow["PId"] = drArr[drArr.Length - 1]["Id"];
+                            tmpRow["PId"] = GetParentId(0);
+                            tmpRow["Id"] = Convert.ToUInt32(i);
+                            tmpRow["Name"] = paragraph.Text;
+                            tmpRow["RichTextString"] = "";
+                            m_DesignDataTable.Rows.Add(tmpRow);
+                        }
+                        if (paragraph.StyleName == "3")
+                        {
+                            tmpRow = m_DesignDataTable.NewRow();
+                            i++;
+                            //找到最近的PID=1的最大Id数据行,得到二级标题的PId,再搜索最大Id数据行
+                            uint tmpPId = GetParentId(0);
+                            tmpRow["PId"] = GetParentId(tmpPId);
+                            tmpRow["Id"] = Convert.ToUInt32(i);
+                            tmpRow["Name"] = paragraph.Text;
+                            tmpRow["RichTextString"] = "";
+                            m_DesignDataTable.Rows.Add(tmpRow);
+                        }
+                        if (paragraph.StyleName == "4")
+                        {
+                            tmpRow = m_DesignDataTable.NewRow();
+                            i++;
+                            uint tmpPId = GetParentId(0);
+                            tmpPId = GetParentId(tmpPId);
+                            tmpRow["PId"] = GetParentId(tmpPId);
+                            tmpRow["Id"] = Convert.ToUInt32(i);
+                            tmpRow["Name"] = paragraph.Text;
+                            tmpRow["RichTextString"] = "";
+                            m_DesignDataTable.Rows.Add(tmpRow);
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("关闭当前打开的word文档");
+                return false;
+            }
+        }
+
+
+        public uint GetParentId(uint id)
+        {
+            DataRow[] drArr = m_DesignDataTable.Select("PId='" + id + "'");
+            uint tmpPId = Convert.ToUInt32(drArr[drArr.Length - 1]["Id"]);
+            return tmpPId;
+        }
+
+        //打开文件操作
+        public Boolean OpenFile(out String sFile, String sFilter, String sTitle)
+        {
+            OpenFileDialog t_OpenFileDlg = new OpenFileDialog();
+            t_OpenFileDlg.Filter = sFilter;
+            t_OpenFileDlg.Multiselect = false;
+            t_OpenFileDlg.Title = sTitle;
+            t_OpenFileDlg.ShowDialog();
+            if (!String.IsNullOrWhiteSpace(t_OpenFileDlg.FileName))
+            {
+                sFile = t_OpenFileDlg.FileName.Trim();
+                if (File.Exists(sFile))
+                {
+                    return (true);
+                }
+            }
+            sFile = null;
+            return (false);
+        }
         private void designTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             newdt.Rows.Clear();
@@ -351,7 +490,7 @@ namespace documentwrite
            
         }
 
-        //tree的信息怎么编排PID，ID信息，从上到下自动，ID固定不变的话，新插入的节点信息ID号跟着递增（自动编排，还是手动写）
+        
 
 
 
