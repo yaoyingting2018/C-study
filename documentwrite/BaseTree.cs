@@ -79,15 +79,8 @@ namespace documentwrite
         public string RichTextString
         {
             get
-            {
-                if (m_RichText == null)
-                {
-                    return "";
-                }
-                else
-                {
-                    return m_RichText.Rtf;
-                }
+            {                
+               return m_RichText.Rtf;               
                
             }
             set
