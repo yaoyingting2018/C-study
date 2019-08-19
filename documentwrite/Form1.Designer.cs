@@ -41,7 +41,6 @@
             this.ylTreeView = new System.Windows.Forms.TreeView();
             this.tabPage5 = new System.Windows.Forms.TabPage();
             this.reportTreeView = new System.Windows.Forms.TreeView();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.barManager1 = new DevExpress.XtraBars.BarManager(this.components);
             this.bar1 = new DevExpress.XtraBars.Bar();
             this.addRoot = new DevExpress.XtraBars.BarButtonItem();
@@ -54,13 +53,14 @@
             this.barSubItem1 = new DevExpress.XtraBars.BarSubItem();
             this.openButtonItem = new DevExpress.XtraBars.BarButtonItem();
             this.saveButtonItem = new DevExpress.XtraBars.BarButtonItem();
+            this.saveAs = new DevExpress.XtraBars.BarButtonItem();
             this.bar3 = new DevExpress.XtraBars.Bar();
+            this.Status_bsti = new DevExpress.XtraBars.BarStaticItem();
             this.barDockControlTop = new DevExpress.XtraBars.BarDockControl();
             this.barDockControlBottom = new DevExpress.XtraBars.BarDockControl();
             this.barDockControlLeft = new DevExpress.XtraBars.BarDockControl();
             this.barDockControlRight = new DevExpress.XtraBars.BarDockControl();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -68,12 +68,14 @@
             this.tabPage4.SuspendLayout();
             this.tabPage5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.barManager1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
-            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl
             // 
+            this.tabControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.tabControl.Controls.Add(this.tabPage1);
             this.tabControl.Controls.Add(this.tabPage2);
             this.tabControl.Controls.Add(this.tabPage3);
@@ -99,6 +101,8 @@
             // 
             // zongTreeView
             // 
+            this.zongTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.zongTreeView.Location = new System.Drawing.Point(0, 0);
             this.zongTreeView.Name = "zongTreeView";
             this.zongTreeView.Size = new System.Drawing.Size(329, 637);
@@ -117,6 +121,8 @@
             // 
             // designTreeView
             // 
+            this.designTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.designTreeView.Location = new System.Drawing.Point(0, 0);
             this.designTreeView.Name = "designTreeView";
             this.designTreeView.Size = new System.Drawing.Size(329, 637);
@@ -136,6 +142,8 @@
             // 
             // testTreeView
             // 
+            this.testTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.testTreeView.Location = new System.Drawing.Point(0, 0);
             this.testTreeView.Name = "testTreeView";
             this.testTreeView.Size = new System.Drawing.Size(329, 637);
@@ -154,6 +162,8 @@
             // 
             // ylTreeView
             // 
+            this.ylTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.ylTreeView.Location = new System.Drawing.Point(0, 0);
             this.ylTreeView.Name = "ylTreeView";
             this.ylTreeView.Size = new System.Drawing.Size(329, 637);
@@ -172,18 +182,12 @@
             // 
             // reportTreeView
             // 
+            this.reportTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.reportTreeView.Location = new System.Drawing.Point(0, 0);
             this.reportTreeView.Name = "reportTreeView";
             this.reportTreeView.Size = new System.Drawing.Size(329, 637);
             this.reportTreeView.TabIndex = 2;
-            // 
-            // richTextBox1
-            // 
-            this.richTextBox1.Location = new System.Drawing.Point(428, 342);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(606, 320);
-            this.richTextBox1.TabIndex = 3;
-            this.richTextBox1.Text = "";
             // 
             // barManager1
             // 
@@ -205,9 +209,11 @@
             this.deleteAll,
             this.editNode,
             this.deleteNode,
-            this.saveTreeNode});
+            this.saveTreeNode,
+            this.saveAs,
+            this.Status_bsti});
             this.barManager1.MainMenu = this.bar2;
-            this.barManager1.MaxItemId = 9;
+            this.barManager1.MaxItemId = 11;
             this.barManager1.StatusBar = this.bar3;
             // 
             // bar1
@@ -294,7 +300,8 @@
             this.barSubItem1.ImageOptions.Image = ((System.Drawing.Image)(resources.GetObject("barSubItem1.ImageOptions.Image")));
             this.barSubItem1.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
             new DevExpress.XtraBars.LinkPersistInfo(((DevExpress.XtraBars.BarLinkUserDefines)((DevExpress.XtraBars.BarLinkUserDefines.Caption | DevExpress.XtraBars.BarLinkUserDefines.PaintStyle))), this.openButtonItem, "&open", false, true, true, 0, null, DevExpress.XtraBars.BarItemPaintStyle.Standard),
-            new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.Caption, this.saveButtonItem, "&save")});
+            new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.Caption, this.saveButtonItem, "&save"),
+            new DevExpress.XtraBars.LinkPersistInfo(this.saveAs)});
             this.barSubItem1.Name = "barSubItem1";
             this.barSubItem1.PaintStyle = DevExpress.XtraBars.BarItemPaintStyle.Caption;
             // 
@@ -320,6 +327,15 @@
             this.saveButtonItem.Name = "saveButtonItem";
             this.saveButtonItem.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.saveButtonItem_ItemClick);
             // 
+            // saveAs
+            // 
+            this.saveAs.Caption = "&save as";
+            this.saveAs.Id = 9;
+            this.saveAs.ImageOptions.Image = ((System.Drawing.Image)(resources.GetObject("saveAs.ImageOptions.Image")));
+            this.saveAs.ImageOptions.LargeImage = ((System.Drawing.Image)(resources.GetObject("saveAs.ImageOptions.LargeImage")));
+            this.saveAs.Name = "saveAs";
+            this.saveAs.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.saveAs_ItemClick);
+            // 
             // bar3
             // 
             this.bar3.BarName = "Status bar";
@@ -327,10 +343,18 @@
             this.bar3.DockCol = 0;
             this.bar3.DockRow = 0;
             this.bar3.DockStyle = DevExpress.XtraBars.BarDockStyle.Bottom;
+            this.bar3.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
+            new DevExpress.XtraBars.LinkPersistInfo(this.Status_bsti)});
             this.bar3.OptionsBar.AllowQuickCustomization = false;
             this.bar3.OptionsBar.DrawDragBorder = false;
             this.bar3.OptionsBar.UseWholeRow = true;
             this.bar3.Text = "Status bar";
+            // 
+            // Status_bsti
+            // 
+            this.Status_bsti.Id = 10;
+            this.Status_bsti.Name = "Status_bsti";
+            this.Status_bsti.Size = new System.Drawing.Size(150, 0);
             // 
             // barDockControlTop
             // 
@@ -344,9 +368,9 @@
             // 
             this.barDockControlBottom.CausesValidation = false;
             this.barDockControlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.barDockControlBottom.Location = new System.Drawing.Point(0, 737);
+            this.barDockControlBottom.Location = new System.Drawing.Point(0, 733);
             this.barDockControlBottom.Manager = this.barManager1;
-            this.barDockControlBottom.Size = new System.Drawing.Size(1162, 23);
+            this.barDockControlBottom.Size = new System.Drawing.Size(1162, 27);
             // 
             // barDockControlLeft
             // 
@@ -354,7 +378,7 @@
             this.barDockControlLeft.Dock = System.Windows.Forms.DockStyle.Left;
             this.barDockControlLeft.Location = new System.Drawing.Point(0, 55);
             this.barDockControlLeft.Manager = this.barManager1;
-            this.barDockControlLeft.Size = new System.Drawing.Size(0, 682);
+            this.barDockControlLeft.Size = new System.Drawing.Size(0, 678);
             // 
             // barDockControlRight
             // 
@@ -362,34 +386,25 @@
             this.barDockControlRight.Dock = System.Windows.Forms.DockStyle.Right;
             this.barDockControlRight.Location = new System.Drawing.Point(1162, 55);
             this.barDockControlRight.Manager = this.barManager1;
-            this.barDockControlRight.Size = new System.Drawing.Size(0, 682);
+            this.barDockControlRight.Size = new System.Drawing.Size(0, 678);
             // 
-            // dataGridView1
+            // splitContainer1
             // 
-            this.dataGridView1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.Location = new System.Drawing.Point(0, 0);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.RowTemplate.Height = 23;
-            this.dataGridView1.Size = new System.Drawing.Size(335, 196);
-            this.dataGridView1.TabIndex = 8;
-            // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.dataGridView1);
-            this.panel1.Location = new System.Drawing.Point(514, 95);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(335, 196);
-            this.panel1.TabIndex = 9;
+            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.splitContainer1.Location = new System.Drawing.Point(433, 76);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.splitContainer1.Size = new System.Drawing.Size(603, 637);
+            this.splitContainer1.SplitterDistance = 238;
+            this.splitContainer1.TabIndex = 14;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1162, 760);
-            this.Controls.Add(this.panel1);
-            this.Controls.Add(this.richTextBox1);
+            this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.tabControl);
             this.Controls.Add(this.barDockControlLeft);
             this.Controls.Add(this.barDockControlRight);
@@ -405,8 +420,8 @@
             this.tabPage4.ResumeLayout(false);
             this.tabPage5.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.barManager1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
-            this.panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -425,7 +440,6 @@
         private System.Windows.Forms.TreeView ylTreeView;
         private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.TreeView reportTreeView;
-        private System.Windows.Forms.RichTextBox richTextBox1;
         private DevExpress.XtraBars.BarManager barManager1;
         private DevExpress.XtraBars.Bar bar1;
         private DevExpress.XtraBars.Bar bar2;
@@ -443,8 +457,9 @@
         private DevExpress.XtraBars.BarButtonItem editNode;
         private DevExpress.XtraBars.BarButtonItem deleteNode;
         private DevExpress.XtraBars.BarButtonItem saveTreeNode;
-        private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private DevExpress.XtraBars.BarButtonItem saveAs;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        private DevExpress.XtraBars.BarStaticItem Status_bsti;
     }
 }
 

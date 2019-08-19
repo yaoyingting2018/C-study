@@ -18,12 +18,15 @@ namespace documentwrite
     public partial class Form1 : Form
     {
         TreeView tmpTree;
-        EditForm ftmp;//定义弹出的窗体类，主要是弹出文本框控件
+        // EditForm ftmp;//定义弹出的窗体类，主要是弹出文本框控件
+        EditDialog ftmp;
         //定义xml文件路径在应用程序下面的相对路径
         string path = Application.StartupPath + "\\test.xml";
         string m_sDesignXmlFile = Environment.CurrentDirectory + "\\DesignTreeTest.xml";
         DataTable m_DesignDataTable;//存储设计树的信息
-       
+        //动态加载的DataGridView、RichTextBox控件
+        DataGridView dataGridView;
+        RichTextBox richTextBox;
         //填充datagrid用
         DataTable newdt;
 
@@ -46,14 +49,24 @@ namespace documentwrite
             {
                 //执行相应的操作
                 tmpTree = zongTreeView;
-                Console.WriteLine(3);
-                
+                splitContainer1.Panel1.Controls.Remove(dataGridView);
+                splitContainer1.Panel2.Controls.Remove(richTextBox);
+               // Console.WriteLine(3);
+
             }
             else if (tabControl.SelectedIndex == 1)
             {
                 //执行相应的操作
                 tmpTree = designTreeView;
-                
+                DesignControls designControls=new DesignControls(splitContainer1);
+                dataGridView = designControls.dataGridView1;
+                richTextBox = designControls.richTextBox1;
+                dataGridView.DataSource = newdt;
+                //PID.ID不可编辑，隐藏最后一列
+                dataGridView.Columns[0].ReadOnly = true;
+                dataGridView.Columns[1].ReadOnly = true;
+                dataGridView.Columns[3].Visible = false;
+
             }
             else if (tabControl.SelectedIndex == 2)
             {
@@ -73,11 +86,12 @@ namespace documentwrite
         private void addRoot_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             //动态添加控件（控件放在窗体中）
-            ftmp = new EditForm();
+            //ftmp = new EditForm();
+            ftmp = new EditDialog();
             TreeNode tmpNode = new TreeNode();
             DataRow dr = m_DesignDataTable.NewRow();
             //  ftmp.Flag = true;
-            if (ftmp.ShowDialog() == DialogResult.OK)
+            if (ftmp.m_Config_form.ShowDialog() == DialogResult.OK)
             {
                 //添加根节点到树节点集合中
                 tmpNode.Text = ftmp.NodeName;                
@@ -94,11 +108,12 @@ namespace documentwrite
         private void addNode_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             // 动态添加控件（控件放在窗体中）
-            ftmp = new EditForm();
+            // ftmp = new EditForm();
+            ftmp = new EditDialog();
             TreeNode tmpNode = new TreeNode();
             DataRow dr = m_DesignDataTable.NewRow();
             // ftmp.Flag = true;
-            if (ftmp.ShowDialog() == DialogResult.OK)
+            if (ftmp.m_Config_form.ShowDialog() == DialogResult.OK)
             {
                 //添加子节点到树节点集合中
                 try
@@ -123,19 +138,18 @@ namespace documentwrite
 
         private void editNode_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-            ftmp = new EditForm();
+            // ftmp = new EditForm();
+            ftmp = new EditDialog();
             //ftmp.Flag = false;
             //树节点的富文本框添加现在选中节点的名字
             try
             {
                 ftmp.RichTextBox.Text = tmpTree.SelectedNode.Text;
             
-                if (ftmp.ShowDialog() == DialogResult.OK)
+                if (ftmp.m_Config_form.ShowDialog() == DialogResult.OK)
                 {
 
                     tmpTree.SelectedNode.Text = ftmp.NodeName;
-
-
                 }
             }
             catch
@@ -192,11 +206,11 @@ namespace documentwrite
             table.Columns["Id"].AutoIncrement = true;
             newdt = new DataTable();
             newdt = table.Clone();
-            dataGridView1.DataSource = newdt;
-            //PID.ID不可编辑，隐藏最后一列
-            dataGridView1.Columns[0].ReadOnly = true;
-            dataGridView1.Columns[1].ReadOnly = true;
-            dataGridView1.Columns[3].Visible = false;          
+            //dataGridView1.DataSource = newdt;
+            ////PID.ID不可编辑，隐藏最后一列
+            //dataGridView1.Columns[0].ReadOnly = true;
+            //dataGridView1.Columns[1].ReadOnly = true;
+            //dataGridView1.Columns[3].Visible = false;          
 
         }
 
@@ -282,7 +296,7 @@ namespace documentwrite
             //存入表格信息 树节点信息变类的所有节点信息，节点信息存入表格，(最后表格写入xml)
             //DataRow dr = m_DesignDataTable.NewRow();
             //判断ID是否存在
-            int tmpid= Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
+            int tmpid= Convert.ToInt32(dataGridView[1, 0].Value.ToString());
             DataRow[] rows = m_DesignDataTable.Select("Id='" + tmpid + "'");
             //判断ID是否存在,存在编辑原表格数据
             //if (rows.Length>0)
@@ -291,9 +305,10 @@ namespace documentwrite
                 rows[0]["Name"]= tmpTree.SelectedNode.Text;
                // rows[0]["PId"] = Convert.ToInt32(dataGridView1[0, 0].Value.ToString());
                // rows[0]["Id"] = Convert.ToInt32(dataGridView1[1, 0].Value.ToString());
-                rows[0]["RichTextString"] = richTextBox1.Rtf;
+                rows[0]["RichTextString"] = richTextBox.Rtf;
                 rows[0].EndEdit();
-                MessageBox.Show("保存节点信息成功");
+                Status_bsti.Caption = "保存节点信息成功";
+                //MessageBox.Show("保存节点信息成功");
             // }
             //else
             //{
@@ -309,13 +324,11 @@ namespace documentwrite
         //保存整个树节点的信息，写入xml文件中
         private void saveButtonItem_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-            string fileName = "";
-            //保存之前对上一次结果做备份
-            if (SaveFile(out fileName, "DesignTreeTest.xml", "xml file|*.xml|all file|*.*"))
-            {
+            
                 File.Copy("DesignTreeTest.xml", "DesignTreeTest.xml.bak", true);
                 m_DesignDataTable.WriteXml(m_sDesignXmlFile, XmlWriteMode.IgnoreSchema);
-            }
+                Status_bsti.Caption = "保存XML成功";
+
         }
 
         //保存文件操作
@@ -466,7 +479,7 @@ namespace documentwrite
         private void designTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             newdt.Rows.Clear();
-            richTextBox1.Rtf = "";
+            richTextBox.Rtf = "";
             if (designTreeView.SelectedNode.Tag != null)
             {
 
@@ -477,7 +490,7 @@ namespace documentwrite
                 {
                     newdt.Rows.Add(row.ItemArray);
                 }
-                richTextBox1.Rtf = newdt.Rows[0]["RichTextString"].ToString();
+                richTextBox.Rtf = newdt.Rows[0]["RichTextString"].ToString();
             }
             
         }
@@ -485,14 +498,128 @@ namespace documentwrite
         private void Form1_Load(object sender, EventArgs e)
         {
             //xml节点信息存入表格
-            LoadDesignXML(m_sDesignXmlFile);
-            BinTreeView(ref designTreeView, m_DesignDataTable);              //表格绑定树控件  
+           LoadDesignXML(m_sDesignXmlFile);
+           BinTreeView(ref designTreeView, m_DesignDataTable);              //表格绑定树控件  
            
         }
 
-        
+        private void saveAs_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
+        {
+            string fileName = "";
+            //保存之前对上一次结果做备份
+            if (SaveFile(out fileName, "DesignTreeTest.xml", "xml file|*.xml|all file|*.*"))
+            {
+                File.Copy("DesignTreeTest.xml", "DesignTreeTest.xml.bak", true);
+                m_DesignDataTable.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
+            }
+        }
+    }
 
+    public  class EditDialog 
+    {
+        public Form m_Config_form = new Form();
+        private string m_nodename;//节点名称
+        private RichTextBox m_richTextBox;
+        private Button m_btnConfirm;
+        private Button m_btnCance;
 
+        public string NodeName
+        {
+            get { return m_nodename; }
+            set { m_nodename = value; }
+        }
 
+        public EditDialog()
+        {
+            InitComponent();
+        }
+
+        ~EditDialog()
+        { }
+
+        private void InitComponent()
+        {
+            m_richTextBox = new RichTextBox();
+            m_btnConfirm = new Button();
+            m_btnCance = new Button();
+
+            m_Config_form.SuspendLayout();
+            // 
+            // richTextBox
+            // 
+            m_richTextBox.Location = new System.Drawing.Point(0, 0);
+            m_richTextBox.Name = "richTextBox";
+            m_richTextBox.Size = new System.Drawing.Size(464, 333);
+            m_richTextBox.TabIndex = 0;
+            m_richTextBox.Text = "";
+            m_richTextBox.Anchor= AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Bottom;
+            // 
+            // btnConfirm
+            // 
+            m_btnConfirm.Location = new System.Drawing.Point(105, 348);
+            m_btnConfirm.Name = "btnConfirm";
+            m_btnConfirm.Size = new System.Drawing.Size(75, 23);
+            m_btnConfirm.TabIndex = 1;
+            m_btnConfirm.Text = "确认";
+            m_btnConfirm.UseVisualStyleBackColor = true;
+            m_btnConfirm.Click += btnConfirm_Click;
+            m_btnConfirm.Anchor= AnchorStyles.Left | AnchorStyles.Bottom;
+            // 
+            // btnCancel
+            // 
+            m_btnCance.Location = new System.Drawing.Point(254, 348);
+            m_btnCance.Name = "btnCance";
+            m_btnCance.Size = new System.Drawing.Size(75, 23);
+            m_btnCance.TabIndex = 1;
+            m_btnCance.Text = "取消";
+            m_btnCance.UseVisualStyleBackColor = true;
+            m_btnCance.Click += btnCancel_Click;
+            m_btnCance.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+            // 
+            // EditForm
+            // 
+            m_Config_form.MaximizeBox = false;
+            m_Config_form.MinimizeBox = false;
+           // m_Config_form.FormBorderStyle = FormBorderStyle.Sizable;
+           // m_Config_form.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+           // m_Config_form.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            m_Config_form.ClientSize = new System.Drawing.Size(463, 392);
+            m_Config_form.Controls.Add(m_btnCance);
+            m_Config_form.Controls.Add(m_btnConfirm);
+            m_Config_form.Controls.Add(m_richTextBox);
+            m_Config_form.Name = "EditDialog";
+            m_Config_form.Text = "EditDialog";
+            m_Config_form.ResumeLayout(false);
+        }
+
+        //获取form2窗口的富文本框
+        public RichTextBox RichTextBox
+        {
+            get { return m_richTextBox; }
+        }
+        private void btnConfirm_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(m_richTextBox.Text.Trim()))
+            {
+                m_nodename = "设计需求";
+            }
+            else
+            {
+                m_nodename = m_richTextBox.Text;
+            }
+
+            //窗体对话框结果
+            m_Config_form.DialogResult = DialogResult.OK;
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            m_Config_form.DialogResult = DialogResult.Cancel;
+        }
+
+        public void Show()
+        {
+            m_Config_form.ShowDialog();
+        }
     }
 }
