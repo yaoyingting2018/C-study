@@ -17,9 +17,8 @@ namespace documentwrite
 {
     public partial class Form1 : Form
     {
-        TreeView tmpTree;
-        // EditForm ftmp;//定义弹出的窗体类，主要是弹出文本框控件
-        EditDialog ftmp;
+        TreeView tmpTree;        
+        EditDialog tmpDialog;//定义弹出的窗体类，主要是弹出文本框控件
         //定义xml文件路径在应用程序下面的相对路径
         string path = Application.StartupPath + "\\test.xml";
         string m_sDesignXmlFile = Environment.CurrentDirectory + "\\DesignTreeTest.xml";
@@ -85,18 +84,17 @@ namespace documentwrite
         //添加根节点
         private void addRoot_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
-            //动态添加控件（控件放在窗体中）
-            //ftmp = new EditForm();
-            ftmp = new EditDialog();
+            //动态添加控件（控件放在窗体中）           
+            tmpDialog = new EditDialog();
             TreeNode tmpNode = new TreeNode();
             DataRow dr = m_DesignDataTable.NewRow();
             //  ftmp.Flag = true;
-            if (ftmp.m_Config_form.ShowDialog() == DialogResult.OK)
+            if (tmpDialog.Show() == DialogResult.OK)
             {
                 //添加根节点到树节点集合中
-                tmpNode.Text = ftmp.NodeName;                
+                tmpNode.Text = tmpDialog.NodeName;                
                 dr["PId"] = 0;
-                dr["Name"] = ftmp.NodeName;
+                dr["Name"] = tmpDialog.NodeName;
                 dr["RichTextString"] = "";
                 m_DesignDataTable.Rows.Add(dr);
                 tmpNode.Tag = dr["Id"];//object类型
@@ -109,19 +107,19 @@ namespace documentwrite
         {
             // 动态添加控件（控件放在窗体中）
             // ftmp = new EditForm();
-            ftmp = new EditDialog();
+            tmpDialog = new EditDialog();
             TreeNode tmpNode = new TreeNode();
             DataRow dr = m_DesignDataTable.NewRow();
             // ftmp.Flag = true;
-            if (ftmp.m_Config_form.ShowDialog() == DialogResult.OK)
+            if (tmpDialog.Show() == DialogResult.OK)
             {
                 //添加子节点到树节点集合中
                 try
                 {
-                    tmpNode.Text = ftmp.NodeName;
+                    tmpNode.Text = tmpDialog.NodeName;
                     //tmpTree.SelectedNode.Nodes.Add(tmpNode);
                     dr["PId"] = Convert.ToUInt32(tmpTree.SelectedNode.Tag);
-                    dr["Name"] = ftmp.NodeName;
+                    dr["Name"] = tmpDialog.NodeName;
                     dr["RichTextString"] = "";
                     m_DesignDataTable.Rows.Add(dr);                    
                     tmpNode.Tag = dr["Id"];//object类型
@@ -139,17 +137,17 @@ namespace documentwrite
         private void editNode_ItemClick(object sender, DevExpress.XtraBars.ItemClickEventArgs e)
         {
             // ftmp = new EditForm();
-            ftmp = new EditDialog();
+            tmpDialog = new EditDialog();
             //ftmp.Flag = false;
             //树节点的富文本框添加现在选中节点的名字
             try
             {
-                ftmp.RichTextBox.Text = tmpTree.SelectedNode.Text;
+                tmpDialog.RichTextBox.Text = tmpTree.SelectedNode.Text;
             
-                if (ftmp.m_Config_form.ShowDialog() == DialogResult.OK)
+                if (tmpDialog.Show() == DialogResult.OK)
                 {
 
-                    tmpTree.SelectedNode.Text = ftmp.NodeName;
+                    tmpTree.SelectedNode.Text = tmpDialog.NodeName;
                 }
             }
             catch
@@ -512,114 +510,6 @@ namespace documentwrite
                 File.Copy("DesignTreeTest.xml", "DesignTreeTest.xml.bak", true);
                 m_DesignDataTable.WriteXml(fileName, XmlWriteMode.IgnoreSchema);
             }
-        }
-    }
-
-    public  class EditDialog 
-    {
-        public Form m_Config_form = new Form();
-        private string m_nodename;//节点名称
-        private RichTextBox m_richTextBox;
-        private Button m_btnConfirm;
-        private Button m_btnCance;
-
-        public string NodeName
-        {
-            get { return m_nodename; }
-            set { m_nodename = value; }
-        }
-
-        public EditDialog()
-        {
-            InitComponent();
-        }
-
-        ~EditDialog()
-        { }
-
-        private void InitComponent()
-        {
-            m_richTextBox = new RichTextBox();
-            m_btnConfirm = new Button();
-            m_btnCance = new Button();
-
-            m_Config_form.SuspendLayout();
-            // 
-            // richTextBox
-            // 
-            m_richTextBox.Location = new System.Drawing.Point(0, 0);
-            m_richTextBox.Name = "richTextBox";
-            m_richTextBox.Size = new System.Drawing.Size(464, 333);
-            m_richTextBox.TabIndex = 0;
-            m_richTextBox.Text = "";
-            m_richTextBox.Anchor= AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Bottom;
-            // 
-            // btnConfirm
-            // 
-            m_btnConfirm.Location = new System.Drawing.Point(105, 348);
-            m_btnConfirm.Name = "btnConfirm";
-            m_btnConfirm.Size = new System.Drawing.Size(75, 23);
-            m_btnConfirm.TabIndex = 1;
-            m_btnConfirm.Text = "确认";
-            m_btnConfirm.UseVisualStyleBackColor = true;
-            m_btnConfirm.Click += btnConfirm_Click;
-            m_btnConfirm.Anchor= AnchorStyles.Left | AnchorStyles.Bottom;
-            // 
-            // btnCancel
-            // 
-            m_btnCance.Location = new System.Drawing.Point(254, 348);
-            m_btnCance.Name = "btnCance";
-            m_btnCance.Size = new System.Drawing.Size(75, 23);
-            m_btnCance.TabIndex = 1;
-            m_btnCance.Text = "取消";
-            m_btnCance.UseVisualStyleBackColor = true;
-            m_btnCance.Click += btnCancel_Click;
-            m_btnCance.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
-            // 
-            // EditForm
-            // 
-            m_Config_form.MaximizeBox = false;
-            m_Config_form.MinimizeBox = false;
-           // m_Config_form.FormBorderStyle = FormBorderStyle.Sizable;
-           // m_Config_form.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-           // m_Config_form.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            m_Config_form.ClientSize = new System.Drawing.Size(463, 392);
-            m_Config_form.Controls.Add(m_btnCance);
-            m_Config_form.Controls.Add(m_btnConfirm);
-            m_Config_form.Controls.Add(m_richTextBox);
-            m_Config_form.Name = "EditDialog";
-            m_Config_form.Text = "EditDialog";
-            m_Config_form.ResumeLayout(false);
-        }
-
-        //获取form2窗口的富文本框
-        public RichTextBox RichTextBox
-        {
-            get { return m_richTextBox; }
-        }
-        private void btnConfirm_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(m_richTextBox.Text.Trim()))
-            {
-                m_nodename = "设计需求";
-            }
-            else
-            {
-                m_nodename = m_richTextBox.Text;
-            }
-
-            //窗体对话框结果
-            m_Config_form.DialogResult = DialogResult.OK;
-        }
-
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-            m_Config_form.DialogResult = DialogResult.Cancel;
-        }
-
-        public void Show()
-        {
-            m_Config_form.ShowDialog();
         }
     }
 }

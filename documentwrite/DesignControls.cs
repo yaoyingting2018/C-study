@@ -39,10 +39,6 @@ namespace documentwrite
             // splitContainer1.Panel2
             // 
             splitContainer.Panel2.Controls.Add(richTextBox1);
-           
-
-
-
         
     }
 
@@ -80,5 +76,113 @@ namespace documentwrite
             // GC.SuppressFinalize(this);
         }
         #endregion
+    }
+
+    public class EditDialog
+    {
+        public Form m_Config_form = new Form();
+        private string m_nodename;//节点名称
+        private RichTextBox m_richTextBox;
+        private Button m_btnConfirm;
+        private Button m_btnCance;
+
+        public string NodeName
+        {
+            get { return m_nodename; }
+            set { m_nodename = value; }
+        }
+
+        public EditDialog()
+        {
+            InitComponent();
+        }
+
+        ~EditDialog()
+        { }
+
+        private void InitComponent()
+        {
+            m_richTextBox = new RichTextBox();
+            m_btnConfirm = new Button();
+            m_btnCance = new Button();
+
+            m_Config_form.SuspendLayout();
+            // 
+            // richTextBox
+            // 
+            m_richTextBox.Location = new System.Drawing.Point(0, 0);
+            m_richTextBox.Name = "richTextBox";
+            m_richTextBox.Size = new System.Drawing.Size(464, 333);
+            m_richTextBox.TabIndex = 0;
+            m_richTextBox.Text = "";
+            m_richTextBox.Anchor = AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Bottom;
+            // 
+            // btnConfirm
+            // 
+            m_btnConfirm.Location = new System.Drawing.Point(105, 348);
+            m_btnConfirm.Name = "btnConfirm";
+            m_btnConfirm.Size = new System.Drawing.Size(75, 23);
+            m_btnConfirm.TabIndex = 1;
+            m_btnConfirm.Text = "确认";
+            m_btnConfirm.UseVisualStyleBackColor = true;
+            m_btnConfirm.Click += btnConfirm_Click;
+            m_btnConfirm.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
+            // 
+            // btnCancel
+            // 
+            m_btnCance.Location = new System.Drawing.Point(254, 348);
+            m_btnCance.Name = "btnCance";
+            m_btnCance.Size = new System.Drawing.Size(75, 23);
+            m_btnCance.TabIndex = 1;
+            m_btnCance.Text = "取消";
+            m_btnCance.UseVisualStyleBackColor = true;
+            m_btnCance.Click += btnCancel_Click;
+            m_btnCance.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+            // 
+            // EditForm
+            // 
+            m_Config_form.MaximizeBox = false;
+            m_Config_form.MinimizeBox = false;
+            // m_Config_form.FormBorderStyle = FormBorderStyle.Sizable;
+            // m_Config_form.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            // m_Config_form.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            m_Config_form.ClientSize = new System.Drawing.Size(463, 392);
+            m_Config_form.Controls.Add(m_btnCance);
+            m_Config_form.Controls.Add(m_btnConfirm);
+            m_Config_form.Controls.Add(m_richTextBox);
+            m_Config_form.Name = "EditDialog";
+            m_Config_form.Text = "EditDialog";
+            m_Config_form.ResumeLayout(false);
+        }
+
+        //获取form2窗口的富文本框
+        public RichTextBox RichTextBox
+        {
+            get { return m_richTextBox; }
+        }
+        private void btnConfirm_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(m_richTextBox.Text.Trim()))
+            {
+                m_nodename = "设计需求";
+            }
+            else
+            {
+                m_nodename = m_richTextBox.Text;
+            }
+
+            //窗体对话框结果
+            m_Config_form.DialogResult = DialogResult.OK;
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            m_Config_form.DialogResult = DialogResult.Cancel;
+        }
+
+        public DialogResult Show()
+        {
+            return m_Config_form.ShowDialog();
+        }
     }
 }
