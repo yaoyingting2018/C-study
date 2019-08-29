@@ -7,10 +7,41 @@ using System.Windows.Forms;
 
 namespace documentwrite
 {
-    class DesignControls: IDisposable
+
+    partial class TreeForm
+    {
+        public SplitContainer splitContainer1;
+        
+
+        public void CreatesplitContainer()
+        {
+            splitContainer1 = new SplitContainer();
+            ((System.ComponentModel.ISupportInitialize)(splitContainer1)).BeginInit();
+            splitContainer1.SuspendLayout();
+
+            // splitContainer1
+            // 
+            splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)));
+            splitContainer1.Location = new System.Drawing.Point(433, 76);
+            splitContainer1.Name = "splitContainer1";
+            splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            splitContainer1.Size = new System.Drawing.Size(603, 626);
+            splitContainer1.SplitterDistance = 233;
+            splitContainer1.TabIndex = 14;
+
+            this.Controls.Add(splitContainer1);
+            ((System.ComponentModel.ISupportInitialize)(splitContainer1)).EndInit();
+            splitContainer1.ResumeLayout(false);
+        }
+    }
+
+        //动态加载设计树的表格和富文本框
+        class DesignControls: IDisposable
     {
         public DataGridView dataGridView1;
         public RichTextBox richTextBox1;
+        
 
         public DesignControls(SplitContainer splitContainer)
         {
@@ -24,6 +55,11 @@ namespace documentwrite
             dataGridView1.RowTemplate.Height = 25;
             dataGridView1.Size = new System.Drawing.Size(603, 238);
             dataGridView1.TabIndex = 0;
+            // dataGridView换行设置
+            dataGridView1.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
+
 
             richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             richTextBox1.Location = new System.Drawing.Point(0, 0);
@@ -45,6 +81,7 @@ namespace documentwrite
         #region IDisposable Support
         private bool disposedValue = false; // 要检测冗余调用
 
+        //释放托管资源
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -78,6 +115,7 @@ namespace documentwrite
         #endregion
     }
 
+    //编辑对话框
     public class EditDialog
     {
         public Form m_Config_form = new Form();
